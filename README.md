@@ -163,6 +163,16 @@ Note: You may also need to set the environment variables (or source setup.sh):
 
 1. Install the latest gcc compiler:
 
+For SLC5:
+
+        $> wget -O /etc/yum.repos.d/slc5-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc5-devtoolset.repo
+    
+For SLC6:
+
+        $> wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
+        
+then:
+
         $> sudo yum install devtoolset-2
         $> sudo ln -s /opt/rh/devtoolset-2/root/usr/bin/* /usr/local/bin/
         $> hash -r
