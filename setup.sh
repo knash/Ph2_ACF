@@ -10,13 +10,9 @@ export CACTUSINCLUDE=/opt/cactus/include
 export BOOST_LIB=/opt/cactus/lib
 export BOOST_INCLUDE=/opt/cactus/include
 
-# QT if installed
-export QTDIR=/usr/local/Trolltech/Qt-4.8.5
-export QMAKESPEC=
-export QTROOTSYSDIR=/usr/local/qtRoot/root
 
 #ROOT
-source /usr/local/bin/thisroot.sh
+#source /usr/local/bin/thisroot.sh
 
 #Ph2_ACF
 export BASE_DIR=$(pwd)
