@@ -41,7 +41,7 @@ else
 	ExtObjectsRoot= $(RootLibraryPaths) -lPh2_Tools
 endif
 
-binaries=print systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure
+binaries=print systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure mytest
 binariesNoRoot=systemtest datatest fpgaconfig configure
 
 .PHONY: clean $(binaries)
@@ -92,6 +92,10 @@ fpgaconfig: fpgaconfig.cc
 	cp $@ ../bin
 
 pulseshape: pulseshape.cc
+	$(CXX) -std=c++11 $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
+	cp $@ ../bin
+
+mytest: mytest.cc
 	$(CXX) -std=c++11 $(CCFlags) -o $@ $< $(IncludePaths) $(ExternalObjects)
 	cp $@ ../bin
 
