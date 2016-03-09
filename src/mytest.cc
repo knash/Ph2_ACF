@@ -7,6 +7,7 @@
 #include "../HWInterface/BeBoardInterface.h"
 #include "../HWDescription/Definition.h"
 #include "../Utils/argvparser.h"
+#include "../tools/Tool.h"
 #include "TROOT.h"
 #include "TApplication.h"
 #include "../Utils/Timer.h"
@@ -39,6 +40,9 @@ int main ( int argc, char* argv[] )
     cmd.defineOption ( "output", "Output Directory . Default value: Results", ArgvParser::OptionRequiresValue /*| ArgvParser::OptionRequired*/ );
     cmd.defineOptionAlternative ( "output", "o" );
 
+	cmd.defineOption( "batch", "Run the application in batch mode", ArgvParser::NoOptionAttribute );
+	cmd.defineOptionAlternative( "batch", "b" );
+    
     // parse
     int result = cmd.parse ( argc, argv );
 
@@ -52,6 +56,8 @@ int main ( int argc, char* argv[] )
     std::string cHWFile = ( cmd.foundOption ( "file" ) ) ? cmd.optionValue ( "file" ) : "settings/Calibration8CBC.xml";
     std::string cDirectory = ( cmd.foundOption ( "output" ) ) ? cmd.optionValue ( "output" ) : "Results/";
     cDirectory += "Test";
+	
+	bool batchMode = ( cmd.foundOption( "batch" ) ) ? true : false;
 
     // TApplication helps to visualize the results via TCanvas while the Application is running!
     TApplication cApp ( "Root Application", &argc, argv );
