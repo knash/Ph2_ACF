@@ -118,10 +118,6 @@ Cbc_default_electron# CMS Ph2 ACF (Acquisition & Control Framework)
     - simplified Definitions.h
     - added an Encode Reg method that can be passed the FE ID instead of decoding it from the CBC id
     - merged DQM code from Nov15 beamtest
-- 03.03.2016: some updates & additions (v1-32)
-    - added support for CMS Tk Ph2 Data format (.daq) files generation
-    - added the option for CMS Tk Ph2 Antenna driver as plugin
-    - removed the Shelf objects from the code for simplicity
 
 ### Setup
 
@@ -148,7 +144,7 @@ This should give you gcc 4.8.1:
 3. Finally, update uHAL to version 2.3:
 
           $> sudo yum groupremove uhal
-          $>wget http://svnweb.cern.ch/trac/cactus/export/28265/tags/ipbus_sw/uhal_2_3_0/scripts/release/cactus.slc5.x86_64.repo 
+          $> wget http://svnweb.cern.ch/trac/cactus/export/28265/tags/ipbus_sw/uhal_2_3_0/scripts/release/cactus.slc5.x86_64.repo 
 
 (You may need the --no-check-certificate)
 
@@ -163,19 +159,9 @@ Note: You may also need to set the environment variables (or source setup.sh):
           $> export LD_LIBRARY_PATH=/opt/cactus/lib:$LD_LIBRARY_PATH
           $> export PATH=/opt/cactus/bin:$PATH
 
-#### Setup on SLC5/6
+#### Setup on SLC6
 
 1. Install the latest gcc compiler:
-
-For SLC5:
-
-        $> wget -O /etc/yum.repos.d/slc5-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc5-devtoolset.repo
-    
-For SLC6:
-
-        $> wget -O /etc/yum.repos.d/slc6-devtoolset.repo http://linuxsoft.cern.ch/cern/devtoolset/slc6-devtoolset.repo
-        
-then:
 
         $> sudo yum install devtoolset-2
         $> sudo ln -s /opt/rh/devtoolset-2/root/usr/bin/* /usr/local/bin/
@@ -187,21 +173,9 @@ This should give you gcc 4.8.1:
 
 2. Install uHAL  version 2.3:
 
-For SLC5:
-
-        $> wget http://svnweb.cern.ch/trac/cactus/export/28265/tags/ipbus_sw/uhal_2_3_0/scripts/release/cactus.slc5.x86_64.repo 
-
-or for SLC6:
-
         $> wget http://svnweb.cern.ch/trac/cactus/export/28265/tags/ipbus_sw/uhal_2_3_0/scripts/release/cactus.slc6.x86_64.repo 
 
 (You may need the --no-check-certificate)
-
-for SLC5:
-
-        $> sudo cp cactus.slc5.x86_64.repo /etc/yum.repos.d/cactus.repo
-
-for SLC6:
 
         $> sudo cp cactus.slc6.x86_64.repo /etc/yum.repos.d/cactus.repo
 
@@ -210,7 +184,9 @@ then
         $> sudo yum clean all
         $> sudo yum groupinstall uhal
 
-3. Install CERN ROOT: [Instructions](https://root.cern.ch/building-root) - make sure to use "fixed location installation"
+3. Install CERN ROOT version 5.34.32: [Instructions](http://root.cern.ch/drupal/content/installing-root-source) - make sure to use "fixed location installation". If root is installed on a CERN computer of virtual machine you can use:
+
+        $> sudo yum install root
 
 Note: You may also need to set the environment variables (or source setup.sh):
 
@@ -220,26 +196,37 @@ Note: You may also need to set the environment variables (or source setup.sh):
 ### The Ph2_ACF Software : 
 
 Follow these instructions to install and compile the libraries:
-(provided you installed the latest version of gcc, µHal, boost as mentioned above)
+(provided you installed the latest version of gcc, µHal, boost as mentioned above).
 
-1. Clone the GitHub repo.
+1. Clone the GitHub repo and run setup.sh
   
-
+        $> git clone https://gitlab.cern.ch/cmstkph2/Ph2_ACF.git
         $> source setup.sh
 
-3. Do a make in the root of the repo (make sure you have all µHal, root, boost... libraries on your computer).
+2. Do a make in the root of the repo (make sure you have all µHal, root, boost... libraries on your computer).
+Note: if you encounter an error about a root-net-http package. Install it with yum:
+
+        $>sudo yum install root-net-http
+
+Again errors may show up, in that case you might have to install the following packages as well:
+
+        $> sudo yum install root-montecarlo-eg root-graf3d-eve root-geom root-physics root-graf3d-gl libusb-devel
 
 3. Launch 
 
         $> systemtest --help
 
-command if you want to test the parsing of the HWDescription.xml file
+command if you want to test the parsing of the HWDescription.xml file.
+
+Note: you may get a warning about a graphical package, in that case you may need to install the following package to resolve it.
+
+	$> sudo yum install xorg-x11-xauth.x86_64
 
 4. Launch
 
         $> datatest --help
 
-command if you want to test if you can correctly read data.
+command if you want to test if you can correctly read data
 
 6. Launch
 
