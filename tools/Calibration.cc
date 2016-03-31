@@ -18,6 +18,8 @@ void Calibration::Initialise ( bool pAllChan )
     fTestPulseAmplitude = ( cSetting != std::end ( fSettingsMap ) ) ? cSetting->second : 0;
     cSetting = fSettingsMap.find ( "VerificationLoop" );
     fCheckLoop = ( cSetting != std::end ( fSettingsMap ) ) ? cSetting->second : 1;
+    cSetting = fSettingsMap.find ( "Epsilon" );
+    fEpsilon = ( cSetting != std::end ( fSettingsMap ) ) ? cSetting->second / float (100) : 0.1;
 
     if ( fTestPulseAmplitude == 0 ) fTestPulse = 0;
     else fTestPulse = 1;
@@ -49,7 +51,7 @@ void Calibration::Initialise ( bool pAllChan )
 
                 if ( cCbcId > cCbcIdMax ) cCbcIdMax = cCbcId;
 
-                fVplusMap[cCbc] = 0;
+                fVplusMap[cCbc] = RegPair (0, false);
 
                 TString cName = Form ( "h_VplusValues_Fe%dCbc%d", cFeId, cCbcId );
                 TObject* cObj = gROOT->FindObject ( cName );
@@ -101,6 +103,7 @@ void Calibration::Initialise ( bool pAllChan )
     std::cout << "	TargetVcth = " << int ( fTargetVcth ) << std::endl;
     std::cout << "	TargetOffset = " << int ( fTargetOffset ) << std::endl;
     std::cout << "	TestPulseAmplitude = " << int ( fTestPulseAmplitude ) << std::endl;
+    std::cout << "	Epsilon = " << float ( fEpsilon ) << std::endl;
 }
 
 void Calibration::MakeTestGroups ( bool pAllChan )
@@ -109,6 +112,7 @@ void Calibration::MakeTestGroups ( bool pAllChan )
     {
         for ( int cGId = 0; cGId < 8; cGId++ )
         {
+            //std::vector<RegPair> tempchannelVec;
             std::vector<uint8_t> tempchannelVec;
 
             for ( int idx = 0; idx < 16; idx++ )
@@ -116,9 +120,13 @@ void Calibration::MakeTestGroups ( bool pAllChan )
                 int ctemp1 = idx * 16 + cGId * 2;
                 int ctemp2 = ctemp1 + 1;
 
-                if ( ctemp1 < 254 ) tempchannelVec.push_back ( ctemp1 );
+                if ( ctemp1 < 254 ) tempchannelVec.push_back ( ctemp1);
 
-                if ( ctemp2 < 254 )  tempchannelVec.push_back ( ctemp2 );
+                //if ( ctemp1 < 254 ) tempchannelVec.push_back ( RegPair(ctemp1, false ));
+
+                if ( ctemp2 < 254 )  tempchannelVec.push_back ( ctemp2);
+
+                //if ( ctemp2 < 254 )  tempchannelVec.push_back ( RegPair(ctemp2, false ));
 
             }
 
@@ -129,9 +137,11 @@ void Calibration::MakeTestGroups ( bool pAllChan )
     else
     {
         int cGId = -1;
+        //std::vector<RegPair> tempchannelVec;
         std::vector<uint8_t> tempchannelVec;
 
         for ( int idx = 0; idx < 254; idx++ )
+            //tempchannelVec.push_back ( RegPair(idx, false ));
             tempchannelVec.push_back ( idx );
 
         fTestGroupChannelMap[cGId] = tempchannelVec;
@@ -170,7 +180,7 @@ void Calibration::FindVplus()
         for ( auto& cCbc : fVplusMap )
         {
             TProfile* cTmpProfile = static_cast<TProfile*> ( getHist ( cCbc.first, "Vplus" ) );
-            cTmpProfile->Fill ( cTGroup.first, cCbc.second ); // fill Vplus value for each test group
+            cTmpProfile->Fill ( cTGroup.first, cCbc.second.fValue ); // fill Vplus value for each test group
             updateHists ( "Vplus" );
         }
     }
@@ -180,10 +190,10 @@ void Calibration::FindVplus()
     for ( auto& cCbc : fVplusMap ) //this toggles bit i on Vplus for each
     {
         TProfile* cTmpProfile = static_cast<TProfile*> ( getHist ( cCbc.first, "Vplus" ) );
-        cCbc.second = cTmpProfile->GetMean ( 2 );
+        cCbc.second.fValue = cTmpProfile->GetMean ( 2 );
 
-        fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second );
-        std::cout << BOLDGREEN <<  "Mean Vplus value for FE " << +cCbc.first->getFeId() << " CBC " << +cCbc.first->getCbcId() << " is " << BOLDRED << +cCbc.second << RESET << std::endl;
+        fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
+        std::cout << BOLDGREEN <<  "Mean Vplus value for FE " << +cCbc.first->getFeId() << " CBC " << +cCbc.first->getCbcId() << " is " << BOLDRED << +cCbc.second.fValue << RESET << std::endl;
     }
 }
 
@@ -194,9 +204,11 @@ void Calibration::bitwiseVplus ( int pTGroup )
     {
         for ( auto& cCbc : fVplusMap ) //this toggles bit i on Vplus for each
         {
+            //cCbc.second is a RegPair and the bit is only toggled if RegPair.fFinal is false
             toggleRegBit ( cCbc.second, iBit );
-            fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second );
-            // std::cout << "IBIT " << +iBit << " DEBUG Setting Vplus for CBC " << +cCbc.first->getCbcId() << " to " << +cCbc.second << " (= 0b" << std::bitset<8>( cCbc.second ) << ")" << std::endl;
+
+            // also, only if it is not yet the final value, will the new value be written
+            if (!cCbc.second.final() ) fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
         }
 
         // now each CBC has the MSB Vplus Bit written
@@ -207,26 +219,39 @@ void Calibration::bitwiseVplus ( int pTGroup )
         // done taking data, now find the occupancy per CBC
         for ( auto& cCbc : fVplusMap )
         {
-            // if the occupancy is larger than 0.5 I need to flip the bit back to 0, else leave it
-            float cOccupancy = findCbcOccupancy ( cCbc.first, pTGroup, fEventsPerPoint );
-
-            if ( fHoleMode && cOccupancy > 0.56 )
+            //only if the Occupancy value for this CBC is not final, extract the occupancy and run the ckeck
+            if (!cCbc.second.final() )
             {
-                toggleRegBit ( cCbc.second, iBit ); //here could also use setRegBit to set to 0 explicitly
-                fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second );
-            }
-            else if ( !fHoleMode && cOccupancy < 0.45 )
-            {
-                toggleRegBit ( cCbc.second, iBit ); //here could also use setRegBit to set to 0 explicitly
-                fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second );
-            }
+                float cOccupancy = findCbcOccupancy ( cCbc.first, pTGroup, fEventsPerPoint );
 
-            // std::cout << "VPlus " << +cCbc.second << " = 0b" << std::bitset<8>( cCbc.second ) << " on CBC " << +cCbc.first->getCbcId() << " Occupancy : " << cOccupancy << std::endl;
+                //std::cout << "VPlus " << +cCbc.second.fValue << " = 0b" << std::bitset<8> ( cCbc.second.fValue ) << " on CBC " << +cCbc.first->getCbcId() << " Occupancy : " << cOccupancy << std::endl;
 
+                //if the diff between occupancy and 0.5 is smaller epsilon, I am happy & it sets the final parameter to true
+                if (fabs (cOccupancy - 0.5) < fEpsilon)
+                {
+                    cCbc.second.fFinal = true;
+                    std::cout << BOLDGREEN << "Occupancy sufficiently close to 50% for Cbc " << +cCbc.first->getCbcId() << " at Bit " << iBit << RESET << std::endl;
+                    // clear the occupancy histogram for the final check
+                    clearOccupancyHists ( cCbc.first );
+                    continue;
+                }
+                //else if ( fHoleMode && cOccupancy > 0.56 )
+                //else if the occupancy is larger 0.5 and the diff is NOT smaller epsilon, fFinal is still false and I flip the bit back
+                else if ( fHoleMode && cOccupancy > 0.50 )
+                {
+                    toggleRegBit ( cCbc.second, iBit );
+                    fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
+                }
+                // the opposite in electron mode
+                else if ( !fHoleMode && cOccupancy < 0.50 )
+                {
+                    toggleRegBit ( cCbc.second, iBit );
+                    fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
+                }
+            }
             // clear the occupancy histogram for the next bit
             clearOccupancyHists ( cCbc.first );
         }
-
     }
 
     if ( fCheckLoop )
@@ -236,7 +261,7 @@ void Calibration::bitwiseVplus ( int pTGroup )
         for ( auto& cCbc : fVplusMap )
         {
             float cOccupancy = findCbcOccupancy ( cCbc.first, pTGroup, fEventsPerPoint );
-            std::cout << BOLDBLUE << "Found Occupancy of " << BOLDRED << cOccupancy << BOLDBLUE << " for CBC " << +cCbc.first->getCbcId() << " , test Group " << pTGroup << " using VPlus " << BOLDRED << +cCbc.second << BOLDBLUE << " (= 0x" << std::hex << +cCbc.second << std::dec << "; 0b" << std::bitset<8> ( cCbc.second ) << ")" << RESET << std::endl;
+            std::cout << BOLDBLUE << "Found Occupancy of " << BOLDRED << cOccupancy << BOLDBLUE << " for CBC " << +cCbc.first->getCbcId() << " , test Group " << pTGroup << " using VPlus " << BOLDRED << +cCbc.second.fValue << BOLDBLUE << " (= 0x" << std::hex << +cCbc.second.fValue << std::dec << "; 0b" << std::bitset<8> ( cCbc.second.fValue ) << ")" << RESET << std::endl;
             clearOccupancyHists ( cCbc.first );
         }
     }
@@ -314,24 +339,24 @@ void Calibration::measureOccupancy ( uint32_t pNEvents, int pTGroup )
 
         //while ( cN < pNEvents )
         //{
-            //fBeBoardInterface->ReadData ( pBoard, false );
-            fBeBoardInterface->ReadNEvents(pBoard, pNEvents);
-            std::vector<Event*> events = fBeBoardInterface->GetEvents ( pBoard );
+        //fBeBoardInterface->ReadData ( pBoard, false );
+        fBeBoardInterface->ReadNEvents (pBoard, pNEvents);
+        std::vector<Event*> events = fBeBoardInterface->GetEvents ( pBoard );
 
-            // if this is for channelwise offset tuning, iterate the events and fill the occupancy histogram
+        // if this is for channelwise offset tuning, iterate the events and fill the occupancy histogram
 
-            for ( auto& cEvent : events )
+        for ( auto& cEvent : events )
+        {
+            for ( auto cFe : pBoard->fModuleVector )
             {
-                for ( auto cFe : pBoard->fModuleVector )
-                {
-                    for ( auto cCbc : cFe->fCbcVector )
-                        fillOccupancyHist ( cCbc, pTGroup, cEvent );
-                }
-
-                cN++;
+                for ( auto cCbc : cFe->fCbcVector )
+                    fillOccupancyHist ( cCbc, pTGroup, cEvent );
             }
 
-            cNthAcq++;
+            cN++;
+        }
+
+        cNthAcq++;
         //}
 
         //fBeBoardInterface->Stop ( pBoard );
@@ -378,7 +403,7 @@ void Calibration::clearVPlusMap()
         for ( auto cFe : cBoard->fModuleVector )
         {
             for ( auto cCbc : cFe->fCbcVector )
-                fVplusMap[cCbc] = 0;
+                fVplusMap[cCbc] = RegPair (0, false);
         }
     }
 }

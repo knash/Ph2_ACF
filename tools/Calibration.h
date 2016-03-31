@@ -39,6 +39,17 @@ typedef std::map<Cbc*, std::vector<Channel> > CbcChannelMap;
 typedef std::vector<std::pair< std::string, uint8_t> > RegisterVector;
 typedef std::map< int, std::vector<uint8_t> >  TestGroupChannelMap;
 
+
+struct RegPair{
+    public:
+        uint8_t fValue;
+        bool fFinal;
+        RegPair(uint8_t pValue, bool pFinal):fValue(pValue), fFinal(pFinal){};
+        RegPair():fValue(0), fFinal(false){};
+        bool final(){return fFinal;}
+};
+
+
 class Calibration : public Tool
 {
   public:
@@ -93,13 +104,22 @@ class Calibration : public Tool
 	void setRegBit( uint8_t& pRegValue, uint8_t pPos, bool pValue ) {
 		pRegValue ^= ( -pValue ^ pRegValue ) & ( 1 << pPos );
 	}
+	void setRegBit( RegPair& pRegValue, uint8_t pPos, bool pValue ) {
+		if(!pRegValue.final()) pRegValue.fValue ^= ( -pValue ^ pRegValue.fValue ) & ( 1 << pPos );
+	}
 
 	void toggleRegBit( uint8_t& pRegValue, uint8_t pPos ) {
 		pRegValue ^= 1 << pPos;
 	}
+	void toggleRegBit( RegPair& pRegValue, uint8_t pPos ) {
+		if(!pRegValue.final()) pRegValue.fValue ^= 1 << pPos;
+	}
 
 	bool getBit( uint8_t& pRegValue, uint8_t pPos ) {
 		return ( pRegValue >> pPos ) & 1;
+	}
+	bool getBit( RegPair& pRegValue, uint8_t pPos ) {
+		return ( pRegValue.fValue >> pPos ) & 1;
 	}
 
 	// Canvases
@@ -109,7 +129,7 @@ class Calibration : public Tool
 
 	// Containers
 	TestGroupChannelMap fTestGroupChannelMap;
-	std::map<Cbc*, uint8_t> fVplusMap;
+	std::map<Cbc*, RegPair> fVplusMap;
 
 	// Counters
 	uint32_t fNCbc;
@@ -123,6 +143,7 @@ class Calibration : public Tool
 	uint8_t fTargetVcth;
 	uint8_t fTargetOffset;
 	bool fCheckLoop;
+    float fEpsilon; // in percent
 
 };
 
