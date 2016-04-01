@@ -127,7 +127,7 @@ void Calibration::MakeTestGroups ( bool pAllChan )
                 if ( ctemp2 < 254 )  tempchannelVec.push_back ( RegPair (ctemp2, false ) );
             }
 
-            fTestGroupChannelMap[cGId] = tempchannelVec;
+            fTestGroupChanMap[cGId] = tempchannelVec;
         }
     }
     else
@@ -141,7 +141,7 @@ void Calibration::MakeTestGroups ( bool pAllChan )
 
         //tempchannelVec.push_back ( idx );
 
-        fTestGroupChannelMap[cGId] = tempchannelVec;
+        fTestGroupChanMap[cGId] = tempchannelVec;
     }
 }
 
@@ -156,7 +156,7 @@ void Calibration::FindVplus()
     // next a group needs to be enabled - therefore now the group loop
     std::cout << BOLDBLUE << "Extracting Vplus ..." << RESET << std::endl;
 
-    for ( auto& cTGroup : fTestGroupChannelMap )
+    for ( auto& cTGroup : fTestGroupChanMap )
     {
         // start with a fresh <Cbc, Vplus> map
         clearVPlusMap();
@@ -273,7 +273,7 @@ void Calibration::FindOffsets()
     // ok, done, all the offsets are at the starting value, VCth & Vplus are written
 
     // now loop over test groups
-    for ( auto& cTGroup : fTestGroupChannelMap )
+    for ( auto& cTGroup : fTestGroupChanMap )
     {
         std::cout << GREEN << "Tuning Test Group...." << cTGroup.first << RESET << std::endl;
 
@@ -358,7 +358,7 @@ float Calibration::findCbcOccupancy ( Cbc* pCbc, int pTGroup, int pEventsPerPoin
     TH1F* cOccHist = static_cast<TH1F*> ( getHist ( pCbc, "Occupancy" ) );
     float cOccupancy = cOccHist->GetEntries();
     // return the hitcount divided by the the number of channels and events
-    return cOccupancy / ( static_cast<float> ( fTestGroupChannelMap[pTGroup].size() * pEventsPerPoint ) );
+    return cOccupancy / ( static_cast<float> ( fTestGroupChanMap[pTGroup].size() * pEventsPerPoint ) );
 }
 
 void Calibration::fillOccupancyHist ( Cbc* pCbc, int pTGroup, const Event* pEvent )
@@ -368,7 +368,7 @@ void Calibration::fillOccupancyHist ( Cbc* pCbc, int pTGroup, const Event* pEven
     // iterate the channels in current group
     //int cHits = 0;
 
-    for ( auto& cChanId : fTestGroupChannelMap[pTGroup] )
+    for ( auto& cChanId : fTestGroupChanMap[pTGroup] )
     {
         // I am filling the occupancy profile for each CBC for the current test group
         // since the value in the testgroupchannel map is a struct (RegPair), I need to explicitly use fValue
@@ -404,7 +404,7 @@ void Calibration::clearTGOccupancy(uint8_t pGroup)
                 TH1F* cOccHist = static_cast<TH1F*> ( getHist ( cCbc, "Occupancy" ) );
 
                 // loop the channels of the current group and toggle bit i in the global map
-                for ( auto& cChannel : fTestGroupChannelMap[pGroup] )
+                for ( auto& cChannel : fTestGroupChanMap[pGroup] )
                 {
                     int iBin = cOccHist->GetXaxis()->FindBin ( cChannel.fValue );
                     cOccHist->SetBinContent ( iBin, 0 );
@@ -448,7 +448,7 @@ void Calibration::setOffset ( uint8_t pOffset, int  pGroup, bool pVPlus )
 
                 // loop the channels of the current group and write the offset
                 // the value of the map is a RegPair
-                for ( auto& cChannel : fTestGroupChannelMap[pGroup] )
+                for ( auto& cChannel : fTestGroupChanMap[pGroup] )
                 {
                     TString cRegName = Form ( "Channel%03d", cChannel.fValue + 1 );
                     cRegVec.push_back ( {cRegName.Data(), pOffset} );
@@ -483,7 +483,7 @@ void Calibration::toggleOffset ( uint8_t pGroup, uint8_t pBit, bool pBegin )
                 RegisterVector cRegVec;   // vector of pairs for the write operation
 
                 // loop the channels of the current group and toggle bit i in the global map
-                for ( auto& cChannel : fTestGroupChannelMap[pGroup] )
+                for ( auto& cChannel : fTestGroupChanMap[pGroup] )
                 {
                     TString cRegName = Form ( "Channel%03d", cChannel.fValue + 1 );
 

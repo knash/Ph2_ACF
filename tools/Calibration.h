@@ -51,7 +51,7 @@ typedef std::map<Cbc*, std::vector<Channel> > CbcChannelMap;
 // typedef std::map<Cbc*, TF1*> FitMap;
 // typedef std::map<Cbc*, TH1F*> HistMap;
 typedef std::vector<std::pair< std::string, uint8_t> > RegisterVector;
-typedef std::map< int, std::vector<RegPair> >  TestGroupChannelMap;
+typedef std::map< int, std::vector<RegPair> >  TestGroupChanMap;
 
 class Calibration : public Tool
 {
@@ -142,7 +142,7 @@ class Calibration : public Tool
     TCanvas* fOccupancyCanvas;
 
     // Containers
-    TestGroupChannelMap fTestGroupChannelMap;
+    TestGroupChanMap fTestGroupChanMap;
     std::map<Cbc*, RegPair> fVplusMap;
 
     // Counters
