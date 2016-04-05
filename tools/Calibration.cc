@@ -164,7 +164,6 @@ void Calibration::FindVplus()
         // looping over the test groups, enable it
         std::cout << GREEN << "Enabling Test Group...." << cTGroup.first << RESET << std::endl;
         setOffset ( fTargetOffset, cTGroup.first, true ); // takes the group ID
-        updateHists ( "Offsets" );
 
         bitwiseVplus ( cTGroup.first );
 
@@ -177,8 +176,11 @@ void Calibration::FindVplus()
         {
             TProfile* cTmpProfile = static_cast<TProfile*> ( getHist ( cCbc.first, "Vplus" ) );
             cTmpProfile->Fill ( cTGroup.first, cCbc.second.fValue ); // fill Vplus value for each test group
-            updateHists ( "Vplus" );
         }
+
+        updateHists ( "Offsets" );
+        updateHists ( "Occupancy" );
+        updateHists ( "Vplus" );
     }
 
     // done extracting reasonable Vplus values for all test groups, now find the mean
@@ -210,44 +212,72 @@ void Calibration::bitwiseVplus ( int pTGroup )
         // now each CBC has the MSB Vplus Bit written
         // now take data
         measureOccupancy ( fEventsPerPoint, pTGroup );
-        updateHists ( "Occupancy" );
 
         // done taking data, now find the occupancy per CBC
         for ( auto& cCbc : fVplusMap )
         {
-            //only if the Occupancy value for this CBC is not final, extract the occupancy and run the ckeck
+            //only if the Occupancy value for this CBC is not final, extract the occupancy and run the check
             if (!cCbc.second.final() )
             {
                 float cOccupancy = findCbcOccupancy ( cCbc.first, pTGroup, fEventsPerPoint );
 
-                //std::cout << "VPlus " << +cCbc.second.fValue << " = 0b" << std::bitset<8> ( cCbc.second.fValue ) << " on CBC " << +cCbc.first->getCbcId() << " Occupancy : " << cOccupancy << std::endl;
+                //std::cout << "VPlus " << +cCbc.second.fValue << " = 0b" << std::bitset<8> ( cCbc.second.fValue ) << " on CBC " << +cCbc.first->getCbcId() << " Occupancy : " << cOccupancy << " " << cCbc.second.fOvershoot << " " << cCbc.second.fUndershoot << std::endl;
 
                 //if the diff between occupancy and 0.5 is smaller epsilon, I am happy & it sets the final parameter to true
                 if (fabs (cOccupancy - 0.5) < fEpsilon)
                 {
                     cCbc.second.fFinal = true;
-                    std::cout << BOLDGREEN << "Occupancy sufficiently close to 50% (+-" << fEpsilon * 100 << "%) for Cbc " << +cCbc.first->getCbcId() << " at Bit " << iBit << RESET << std::endl;
+                    //std::cout << BOLDGREEN << "Occupancy sufficiently close to 50% (+-" << fEpsilon * 100 << "%) for Cbc " << +cCbc.first->getCbcId() << " at Bit " << iBit << RESET << std::endl;
                     // clear the occupancy histogram for the final check
                     clearOccupancyHists ( cCbc.first );
                     continue;
                 }
-                //else if ( fHoleMode && cOccupancy > 0.56 )
-                //else if the occupancy is larger 0.5 and the diff is NOT smaller epsilon, fFinal is still false and I flip the bit back
-                else if ( fHoleMode && cOccupancy > 0.50 )
+
+                else
                 {
-                    toggleRegBit ( cCbc.second, iBit );
-                    fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
-                }
-                // the opposite in electron mode
-                else if ( !fHoleMode && cOccupancy < 0.50 )
-                {
-                    toggleRegBit ( cCbc.second, iBit );
-                    fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
+                    if (fHoleMode)
+                    {
+                        if (cOccupancy > 0.5)
+                        {
+                            toggleRegBit ( cCbc.second, iBit );
+                            fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
+                            cCbc.second.fOvershoot = cOccupancy;
+                        }
+                        else
+                            cCbc.second.fUndershoot = cOccupancy;
+                    }
+                    else
+                    {
+                        if (cOccupancy < 0.50)
+                        {
+                            toggleRegBit ( cCbc.second, iBit );
+                            fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
+                            cCbc.second.fUndershoot = cOccupancy;
+                        }
+                        else
+                            cCbc.second.fOvershoot = cOccupancy;
+                    }
                 }
             }
 
             // clear the occupancy histogram for the next bit
             clearOccupancyHists ( cCbc.first );
+        }
+    }
+
+    //now need to loop all the structures and compare overshoot and undershoot
+    for (auto& cCbc : fVplusMap)
+    {
+        //if final, don't run the check because we already satisfy the reuqirement of being epsilon close
+        if (fHoleMode)
+        {
+            if (!cCbc.second.final() && fabs (0.5 - cCbc.second.fUndershoot) > fabs (cCbc.second.fOvershoot - 0.5) )
+                if (cCbc.second.fValue < 255) cCbc.second.fValue += 1;
+        }
+        else
+        {
+            if (!cCbc.second.final() && fabs (0.5 - cCbc.second.fUndershoot) < fabs (cCbc.second.fOvershoot - 0.5) )
+                if (cCbc.second.fValue < 255) cCbc.second.fValue += 1;
         }
     }
 
@@ -282,7 +312,7 @@ void Calibration::FindOffsets()
 
         if ( fCheckLoop )
         {
-            clearTGOccupancy(cTGroup.first);
+            clearTGOccupancy (cTGroup.first);
             // now all the bits are toggled or not, I still want to verify that the occupancy is ok
             int cMultiple = 3;
             std::cout << "Verifying Occupancy with final offsets by taking " << fEventsPerPoint* cMultiple << " Triggers!" << std::endl;
@@ -310,18 +340,21 @@ void Calibration::bitwiseOffset ( int pTGroup )
         // now, for all the channels in the group and for each cbc, toggle the next bit of the offset from the map
         toggleOffset ( pTGroup, iBit, true );
 
-        updateHists ( "Offsets" );
+        //updateHists ( "Offsets" );
 
         // now the offset for the current group is changed
         // now take data
         measureOccupancy ( fEventsPerPoint, pTGroup );
 
-        updateHists ( "Occupancy" );
+        //updateHists ( "Occupancy" );
 
         // now call toggleOffset again with pBegin = false; this method checks the occupancy and flips a bit back if necessary
         toggleOffset ( pTGroup, iBit, false );
-        updateHists ( "Offsets" );
+        //updateHists ( "Offsets" );
     }
+
+    updateHists ( "Offsets" );
+    updateHists ( "Occupancy" );
 }
 
 
@@ -388,7 +421,7 @@ void Calibration::clearOccupancyHists ( Cbc* pCbc )
     cOccHist->Reset ( "ICESM" );
 }
 
-void Calibration::clearTGOccupancy(uint8_t pGroup)
+void Calibration::clearTGOccupancy (uint8_t pGroup)
 {
     for ( auto cBoard : fBoardVector )
     {
@@ -522,7 +555,7 @@ void Calibration::toggleOffset ( uint8_t pGroup, uint8_t pBit, bool pBegin )
                                 //I've found an offset that meets the requirement
                                 cChannel.fFinal = true;
                                 //cOffsetHist->SetBinContent(cChannel.fValue, cOffset);
-                                std::cout << BOLDGREEN << "Found 50% at bit " << +pBit << " and offset 0x" << std::hex << +cOffset << RESET << std::endl;
+                                //std::cout << BOLDGREEN << "Found 50% at bit " << +pBit << " and offset 0x" << std::hex << +cOffset << RESET << std::endl;
                                 continue;
                             }
                             else if (cOccupancy > 0.5 * fEventsPerPoint)

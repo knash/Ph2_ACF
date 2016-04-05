@@ -37,9 +37,14 @@ struct RegPair
 {
   public:
     uint8_t fValue;
+    float fOvershoot;
+    float fUndershoot;
     bool fFinal;
-    RegPair (uint8_t pValue, bool pFinal) : fValue (pValue), fFinal (pFinal) {};
-    RegPair() : fValue (0), fFinal (false) {};
+    RegPair (uint8_t pValue, bool pFinal) : fValue (pValue), fFinal (pFinal) {
+        fOvershoot = 1;
+        fUndershoot = 0;
+    };
+    RegPair() : fValue (0), fFinal (false), fOvershoot(1), fUndershoot(0) {};
     bool final()
     {
         return fFinal;

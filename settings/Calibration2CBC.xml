@@ -54,5 +54,5 @@
     <Setting name="TestPulsePotentiometer">0x00</Setting>
     <Setting name="HoleMode">1</Setting>
     <Setting name="VerificationLoop">1</Setting>
-    <Setting name="Epsilon">7</Setting>
+    <Setting name="Epsilon">3</Setting>
 </Settings>
