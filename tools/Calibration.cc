@@ -219,49 +219,50 @@ void Calibration::bitwiseVplus ( int pTGroup )
             // if the occupancy is larger than 0.5 I need to flip the bit back to 0, else leave it
             float cOccupancy = findCbcOccupancy ( cCbc.first, pTGroup, fEventsPerPoint );
 
-                //std::cout << "VPlus " << +cCbc.second.fValue << " = 0b" << std::bitset<8> ( cCbc.second.fValue ) << " on CBC " << +cCbc.first->getCbcId() << " Occupancy : " << cOccupancy << " " << cCbc.second.fOvershoot << " " << cCbc.second.fUndershoot << std::endl;
+            //std::cout << "VPlus " << +cCbc.second.fValue << " = 0b" << std::bitset<8> ( cCbc.second.fValue ) << " on CBC " << +cCbc.first->getCbcId() << " Occupancy : " << cOccupancy << " " << cCbc.second.fOvershoot << " " << cCbc.second.fUndershoot << std::endl;
 
-                //if the diff between occupancy and 0.5 is smaller epsilon, I am happy & it sets the final parameter to true
-                if (fabs (cOccupancy - 0.5) < fEpsilon)
-                {
-                    cCbc.second.fFinal = true;
-                    //std::cout << BOLDGREEN << "Occupancy sufficiently close to 50% (+-" << fEpsilon * 100 << "%) for Cbc " << +cCbc.first->getCbcId() << " at Bit " << iBit << RESET << std::endl;
-                    // clear the occupancy histogram for the final check
-                    clearOccupancyHists ( cCbc.first );
-                    continue;
-                }
+            //if the diff between occupancy and 0.5 is smaller epsilon, I am happy & it sets the final parameter to true
+            if (fabs (cOccupancy - 0.5) < fEpsilon)
+            {
+                cCbc.second.fFinal = true;
+                //std::cout << BOLDGREEN << "Occupancy sufficiently close to 50% (+-" << fEpsilon * 100 << "%) for Cbc " << +cCbc.first->getCbcId() << " at Bit " << iBit << RESET << std::endl;
+                // clear the occupancy histogram for the final check
+                clearOccupancyHists ( cCbc.first );
+                continue;
+            }
 
-                else
+            else
+            {
+                if (fHoleMode)
                 {
-                    if (fHoleMode)
+                    if (cOccupancy > 0.5)
                     {
-                        if (cOccupancy > 0.5)
-                        {
-                            toggleRegBit ( cCbc.second, iBit );
-                            fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
-                            cCbc.second.fOvershoot = cOccupancy;
-                        }
-                        else
-                            cCbc.second.fUndershoot = cOccupancy;
+                        toggleRegBit ( cCbc.second, iBit );
+                        fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
+                        cCbc.second.fOvershoot = cOccupancy;
                     }
                     else
+                        cCbc.second.fUndershoot = cOccupancy;
+                }
+                else
+                {
+                    if (cOccupancy < 0.50)
                     {
-                        if (cOccupancy < 0.50)
-                        {
-                            toggleRegBit ( cCbc.second, iBit );
-                            fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
-                            cCbc.second.fUndershoot = cOccupancy;
-                        }
-                        else
-                            cCbc.second.fOvershoot = cOccupancy;
+                        toggleRegBit ( cCbc.second, iBit );
+                        fCbcInterface->WriteCbcReg ( cCbc.first, "Vplus", cCbc.second.fValue );
+                        cCbc.second.fUndershoot = cOccupancy;
                     }
+                    else
+                        cCbc.second.fOvershoot = cOccupancy;
                 }
             }
 
             // clear the occupancy histogram for the next bit
             clearOccupancyHists ( cCbc.first );
         }
+
     }
+
 
     //now need to loop all the structures and compare overshoot and undershoot
     for (auto& cCbc : fVplusMap)
@@ -658,4 +659,3 @@ void Calibration::writeGraphs()
     fOccupancyCanvas->Write ( fOccupancyCanvas->GetName(), TObject::kOverwrite );
 
 }
-

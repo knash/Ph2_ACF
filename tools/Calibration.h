@@ -40,11 +40,12 @@ struct RegPair
     float fOvershoot;
     float fUndershoot;
     bool fFinal;
-    RegPair (uint8_t pValue, bool pFinal) : fValue (pValue), fFinal (pFinal) {
+    RegPair (uint8_t pValue, bool pFinal) : fValue (pValue), fFinal (pFinal)
+    {
         fOvershoot = 1;
         fUndershoot = 0;
     };
-    RegPair() : fValue (0), fFinal (false), fOvershoot(1), fUndershoot(0) {};
+    RegPair() : fValue (0), fFinal (false), fOvershoot (1), fUndershoot (0) {};
     bool final()
     {
         return fFinal;
@@ -61,49 +62,53 @@ typedef std::map< int, std::vector<RegPair> >  TestGroupChanMap;
 class Calibration : public Tool
 {
   public:
-	Calibration() {};
-	~Calibration() {
-		//if ( fResultFile ) {
-			//fResultFile->Write();
-			//fResultFile->Close();
-		//}
-	}
+    Calibration() {};
+    ~Calibration()
+    {
+        //if ( fResultFile ) {
+        //fResultFile->Write();
+        //fResultFile->Close();
+        //}
+    }
 
-	void Initialise( bool pAllChan = false );
-	void FindVplus();
-	void FindOffsets();
-	void SaveResults() {
-		writeGraphs();
-		//dumpConfigFiles();
-	}
+    void Initialise ( bool pAllChan = false );
+    void FindVplus();
+    void FindOffsets();
+    void SaveResults()
+    {
+        writeGraphs();
+        //dumpConfigFiles();
+    }
 
 
   protected:
-	void MakeTestGroups( bool pAllChan = false );
+    void MakeTestGroups ( bool pAllChan = false );
 
-	void bitwiseVplus( int pTGroup );
+    void bitwiseVplus ( int pTGroup );
 
-	void bitwiseOffset( int pTGroup );
+    void bitwiseOffset ( int pTGroup );
 
-	void setOffset( uint8_t pOffset, int  pTGroupId, bool pVPlus = false );
+    void setOffset ( uint8_t pOffset, int  pTGroupId, bool pVPlus = false );
 
-	void toggleOffset( uint8_t pGroup, uint8_t pBit, bool pBegin );
+    void toggleOffset ( uint8_t pGroup, uint8_t pBit, bool pBegin );
 
-	void measureOccupancy( uint32_t pNEvents, int pTGroup );
+    void measureOccupancy ( uint32_t pNEvents, int pTGroup );
 
-	float findCbcOccupancy( Cbc* pCbc, int pTGroup, int pEventsPerPoint );
+    float findCbcOccupancy ( Cbc* pCbc, int pTGroup, int pEventsPerPoint );
 
-	void fillOccupancyHist( Cbc* pCbc, int pTGroup, const Event* pEvent );
+    void fillOccupancyHist ( Cbc* pCbc, int pTGroup, const Event* pEvent );
 
-	void clearOccupancyHists( Cbc* pCbc );
+    void clearOccupancyHists ( Cbc* pCbc );
 
-	void clearVPlusMap();
+    void clearTGOccupancy (uint8_t pGroup);
 
-	void setRegValues();
+    void clearVPlusMap();
 
-	void updateHists( std::string pHistname );
+    void setRegValues();
 
-	void writeGraphs();
+    void updateHists ( std::string pHistname );
+
+    void writeGraphs();
 
 
   private:
@@ -135,10 +140,10 @@ class Calibration : public Tool
         return ( pRegValue.fValue >> pPos ) & 1;
     }
 
-	// Canvases
-	TCanvas* fVplusCanvas;
-	TCanvas* fOffsetCanvas;
-	TCanvas* fOccupancyCanvas;
+    // Canvases
+    TCanvas* fVplusCanvas;
+    TCanvas* fOffsetCanvas;
+    TCanvas* fOccupancyCanvas;
 
     // Containers
     TestGroupChanMap fTestGroupChanMap;
