@@ -216,10 +216,8 @@ void Calibration::bitwiseVplus ( int pTGroup )
         // done taking data, now find the occupancy per CBC
         for ( auto& cCbc : fVplusMap )
         {
-            //only if the Occupancy value for this CBC is not final, extract the occupancy and run the check
-            if (!cCbc.second.final() )
-            {
-                float cOccupancy = findCbcOccupancy ( cCbc.first, pTGroup, fEventsPerPoint );
+            // if the occupancy is larger than 0.5 I need to flip the bit back to 0, else leave it
+            float cOccupancy = findCbcOccupancy ( cCbc.first, pTGroup, fEventsPerPoint );
 
                 //std::cout << "VPlus " << +cCbc.second.fValue << " = 0b" << std::bitset<8> ( cCbc.second.fValue ) << " on CBC " << +cCbc.first->getCbcId() << " Occupancy : " << cOccupancy << " " << cCbc.second.fOvershoot << " " << cCbc.second.fUndershoot << std::endl;
 
@@ -297,6 +295,8 @@ void Calibration::bitwiseVplus ( int pTGroup )
 void Calibration::FindOffsets()
 {
     // do a binary search for the correct offset value
+
+
     // just to be sure, configure the correct VCth and VPlus values
     CbcRegWriter cWriter ( fCbcInterface, "VCth", fTargetVcth );
     accept ( cWriter );
@@ -340,17 +340,14 @@ void Calibration::bitwiseOffset ( int pTGroup )
         // now, for all the channels in the group and for each cbc, toggle the next bit of the offset from the map
         toggleOffset ( pTGroup, iBit, true );
 
-        //updateHists ( "Offsets" );
 
         // now the offset for the current group is changed
         // now take data
         measureOccupancy ( fEventsPerPoint, pTGroup );
 
-        //updateHists ( "Occupancy" );
 
         // now call toggleOffset again with pBegin = false; this method checks the occupancy and flips a bit back if necessary
         toggleOffset ( pTGroup, iBit, false );
-        //updateHists ( "Offsets" );
     }
 
     updateHists ( "Offsets" );
@@ -653,7 +650,7 @@ void Calibration::writeGraphs()
 
     // Save hist maps for CBCs
     //
-    Tool::SaveResults();
+    //Tool::SaveResults();
 
     // save canvases too
     fVplusCanvas->Write ( fVplusCanvas->GetName(), TObject::kOverwrite );
@@ -662,27 +659,3 @@ void Calibration::writeGraphs()
 
 }
 
-void Calibration::dumpConfigFiles()
-{
-    // visitor to call dumpRegFile on each Cbc
-    struct RegMapDumper : public HwDescriptionVisitor
-    {
-        std::string fDirectoryName;
-        RegMapDumper ( std::string pDirectoryName ) : fDirectoryName ( pDirectoryName ) {};
-        void visit ( Cbc& pCbc )
-        {
-            if ( !fDirectoryName.empty() )
-            {
-                TString cFilename = fDirectoryName + Form ( "/FE%dCBC%d.txt", pCbc.getFeId(), pCbc.getCbcId() );
-                // cFilename += Form( "/FE%dCBC%d.txt", pCbc.getFeId(), pCbc.getCbcId() );
-                pCbc.saveRegMap ( cFilename.Data() );
-            }
-            else std::cout << "Error: no results Directory initialized! "  << std::endl;
-        }
-    };
-
-    RegMapDumper cDumper ( fDirectoryName );
-    accept ( cDumper );
-
-    std::cout << BOLDBLUE << "Configfiles for all Cbcs written to " << fDirectoryName << RESET << std::endl;
-}
