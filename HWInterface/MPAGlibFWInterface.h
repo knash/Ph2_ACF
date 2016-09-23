@@ -1,7 +1,7 @@
 /*!
 
-        \file                           GlibFWInterface.h
-        \brief                          GlibFWInterface init/config of the Glib and its Cbc's
+        \file                           MPAGlibFWInterface.h
+        \brief                          MPAGlibFWInterface init/config of the Glib and its Cbc's
         \author                         Lorenzo BIDEGAIN, Nicolas PIERRE
         \version            1.0
         \date                           28/07/14
@@ -9,8 +9,8 @@
 
  */
 
-#ifndef __GLIBFWINTERFACE_H__
-#define __GLIBFWINTERFACE_H__
+#ifndef __MPAGlibFWInterface_H__
+#define __MPAGlibFWInterface_H__
 
 #include <string>
 #include <map>
@@ -31,10 +31,10 @@ namespace Ph2_HwInterface
 {
 class FpgaConfig;
 /*!
- * \class GlibFWInterface
+ * \class MPAGlibFWInterface
  * \brief init/config of the Glib and its Cbc's
  */
-class GlibFWInterface : public BeBoardFWInterface
+class MPAGlibFWInterface : public BeBoardFWInterface
 {
 
 private:
@@ -56,25 +56,25 @@ private:
 
 public:
     /*!
-     * \brief Constructor of the GlibFWInterface class
+     * \brief Constructor of the MPAGlibFWInterface class
      * \param puHalConfigFileName : path of the uHal Config File
      * \param pBoardId
      */
-    GlibFWInterface( const char* puHalConfigFileName, uint32_t pBoardId );
-    GlibFWInterface( const char* puHalConfigFileName, uint32_t pBoardId, FileHandler* pFileHandler );
+    MPAGlibFWInterface( const char* puHalConfigFileName, uint32_t pBoardId );
+    MPAGlibFWInterface( const char* puHalConfigFileName, uint32_t pBoardId, FileHandler* pFileHandler );
     /*!
-    * \brief Constructor of the GlibFWInterface class
+    * \brief Constructor of the MPAGlibFWInterface class
     * \param pId : ID string
     * \param pUri: URI string
     * \param pAddressTable: address tabel string
     */
-    GlibFWInterface( const char* pId, const char* pUri, const char* pAddressTable );
-    GlibFWInterface( const char* pId, const char* pUri, const char* pAddressTable, FileHandler* pFileHandler );
+    MPAGlibFWInterface( const char* pId, const char* pUri, const char* pAddressTable );
+    MPAGlibFWInterface( const char* pId, const char* pUri, const char* pAddressTable, FileHandler* pFileHandler );
 
     /*!
-     * \brief Destructor of the GlibFWInterface class
+     * \brief Destructor of the MPAGlibFWInterface class
      */
-    ~GlibFWInterface()
+    ~MPAGlibFWInterface()
     {
         if (fData) delete fData;
     }

@@ -145,3 +145,4 @@ int BeBoardFWInterface::getNumAcqThread()
     return ( int )numAcq;
 }
 }
+
