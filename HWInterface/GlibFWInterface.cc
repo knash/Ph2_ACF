@@ -501,10 +501,10 @@ namespace Ph2_HwInterface
 	    
 	    uhal::ValWord<uint32_t> busyseq;
 	    std::chrono::milliseconds cWait( 1 );
-	    busyseq = fBoardFW->ReadReg("Control.Sequencer.busy");
+	    busyseq = ReadReg("Control.Sequencer.busy");
 	    while (busyseq == 1)
 	      {
-		busyseq = fBoardFW->ReadReg("Control.Sequencer.busy");
+		busyseq = ReadReg("Control.Sequencer.busy");
 		std::this_thread::sleep_for( cWait );
 		i++;
 		if (i > 100) {
@@ -530,19 +530,19 @@ namespace Ph2_HwInterface
 	    int Offset_MPA = -1;
 	    std::string targ;
 	    std::cout<<"\nRead_Trig - for now just display to stdout\n";
-	    total_trigs = fBoardFW->ReadReg("Control.total_triggers");
+	    total_trigs = ReadReg("Control.total_triggers");
 
 	    targ = "Control.trigger_counter.buffer_" + std::to_string(buffer_num);  
-	    trigger_counter = fBoardFW->ReadReg(targ);
+	    trigger_counter = ReadReg(targ);
 
 	    targ = "Control.trigger_counter.buffer_" + std::to_string(buffer_num);  
-	    trigger_total_counter = fBoardFW->ReadReg(targ);
+	    trigger_total_counter = ReadReg(targ);
 
 	    targ = "Control.trigger_offset_BEAM.buffer_" + std::to_string(buffer_num); 
-	    std::vector<uint32_t> rData =  fBoardFW->ReadBlockRegValue( targ, 255 );
+	    std::vector<uint32_t> rData =  ReadBlockRegValue( targ, 255 );
 
 	    targ = "Control.trigger_offset_MPA.buffer_" + std::to_string(buffer_num);  
-	    std::vector<uint32_t> rData2 =  fBoardFW->ReadBlockRegValue( targ, 255 );
+	    std::vector<uint32_t> rData2 =  ReadBlockRegValue( targ, 255 );
 
 	    std::cout<<"   total_triggers = "<<total_trigs<<"\n";
 	    std::cout<<"   trigger_counter = "<<trigger_counter<<"\n";
@@ -572,22 +572,22 @@ namespace Ph2_HwInterface
 	  {
 	    switch (nmpa) {
 	    case 1:
-	      fBoardFW->WriteReg( "Readout.Header.MPA1", 0xFFFFFFFF1 );
+	      WriteReg( "Readout.Header.MPA1", 0xFFFFFFFF1 );
 	      break;
 	    case 2:
-	      fBoardFW->WriteReg( "Readout.Header.MPA2", 0xFFFFFFFF2 );
+	      WriteReg( "Readout.Header.MPA2", 0xFFFFFFFF2 );
 	      break;
 	    case 3:
-	      fBoardFW->WriteReg( "Readout.Header.MPA3", 0xFFFFFFFF3 );
+	      WriteReg( "Readout.Header.MPA3", 0xFFFFFFFF3 );
 	      break;
 	    case 4:
-	      fBoardFW->WriteReg( "Readout.Header.MPA4", 0xFFFFFFFF4 );
+	      WriteReg( "Readout.Header.MPA4", 0xFFFFFFFF4 );
 	      break;
 	    case 5:
-	      fBoardFW->WriteReg( "Readout.Header.MPA5", 0xFFFFFFFF5 );
+	      WriteReg( "Readout.Header.MPA5", 0xFFFFFFFF5 );
 	      break;
 	    case 6:
-	      fBoardFW->WriteReg( "Readout.Header.MPA6", 0xFFFFFFFF6 );
+	      WriteReg( "Readout.Header.MPA6", 0xFFFFFFFF6 );
 	      break;
 	    default:
 	      std::cout<<"\nError in MPA selection!";
@@ -613,11 +613,11 @@ namespace Ph2_HwInterface
 	      clkset = 0;
 	      break;
 	    }
-	    fBoardFW->WriteReg("Control.testbeam_clock", clkset);
-	    fBoardFW->WriteReg("Control.testbeam_mode", 1);
+	    WriteReg("Control.testbeam_clock", clkset);
+	    WriteReg("Control.testbeam_mode", 1);
 	    
-	    fBoardFW->WriteReg("Control.beam_on", 1);
-	    fBoardFW->WriteReg("Control.shutter_delay", phase);
+	    WriteReg("Control.beam_on", 1);
+	    WriteReg("Control.shutter_delay", phase);
 	  }
 
 
@@ -805,23 +805,23 @@ namespace Ph2_HwInterface
 					       int sdist, int cal)
 	  {
 	    std::cout<<"\nStrobeSettings\n";
-	    fBoardFW->WriteReg("Shutter.Strobe.number", snum);
-	    fBoardFW->WriteReg("Shutter.Strobe.delay", sdel);
-	    fBoardFW->WriteReg("Shutter.Strobe.length", slen);
-	    fBoardFW->WriteReg("Shutter.Strobe.distance", sdist);
+	    WriteReg("Shutter.Strobe.number", snum);
+	    WriteReg("Shutter.Strobe.delay", sdel);
+	    WriteReg("Shutter.Strobe.length", slen);
+	    WriteReg("Shutter.Strobe.distance", sdist);
 	    
-	    fBoardFW->WriteReg("Control.calibration", cal);
+	    WriteReg("Control.calibration", cal);
 	  }
 
 
 	void GlibFWInterface::SequencerInit(int smode,int sdur,int mem,int ibuff)
 	  {
 	    std::cout<<"\nSequencerInit\n";
-	    fBoardFW->WriteReg("Shutter.time", sdur);
-	    fBoardFW->WriteReg("Control.testbeam_mode", 0x0);
-	    fBoardFW->WriteReg("Control.readout", mem);
-	    fBoardFW->WriteReg("Control.Sequencer.datataking_continuous", smode);
-	    fBoardFW->WriteReg("Control.Sequencer.buffers_index", ibuff);
+	    WriteReg("Shutter.time", sdur);
+	    WriteReg("Control.testbeam_mode", 0x0);
+	    WriteReg("Control.readout", mem);
+	    WriteReg("Control.Sequencer.datataking_continuous", smode);
+	    WriteReg("Control.Sequencer.buffers_index", ibuff);
 	  }
 
 
@@ -900,10 +900,10 @@ namespace Ph2_HwInterface
 
 				}
 	    std::cout<<"Writing to Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1 " <<std::endl;
-	    fBoardFW->WriteBlockReg( "Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1", conf_upload);
-	    fBoardFW->WriteReg( "Configuration.mode",0x5);
-	    fBoardFW->WriteBlockReg( "Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1", conf_upload);
-	    fBoardFW->WriteReg( "Configuration.mode",0x5);
+	    WriteBlockReg( "Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1", conf_upload);
+	    WriteReg( "Configuration.mode",0x5);
+	    WriteBlockReg( "Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1", conf_upload);
+	    WriteReg( "Configuration.mode",0x5);
 	    }
 
 
