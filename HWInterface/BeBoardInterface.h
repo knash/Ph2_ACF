@@ -227,6 +227,33 @@ namespace Ph2_HwInterface
  		* \param pBoard pointer to a board description 
 		 * \param strId Firmware image identifier*/
 		void DeleteFpgaConfig(BeBoard* pBoard, const std::string& strId);
+
+
+
+		void PowerOn( BeBoard* pBoard );
+
+		void ReadVer( BeBoard* pBoard );
+		void TestbeamInit( BeBoard* pBoard, int clock, int phase );
+		void StrobeSettings( BeBoard* pBoard, 
+				     int snum, int sdel, int slen, 
+				     int sdist, int cal);
+  		std::pair<std::vector<uint32_t>, std::vector<uint32_t>>   ReadData( BeBoard* pBoard, int buffernum, int mpa);
+    		std::pair<std::vector<uint32_t>, std::vector<std::string>>  FormatData(BeBoard* pBoard,std::pair<std::vector<uint32_t>, std::vector<uint32_t>> data);
+		std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>> ReadMemory(BeBoard* pBoard,std::vector<std::string> intmemory, int mode);
+		void SequencerInit( BeBoard* pBoard,int smode,int sdur,int mem,int ibuff);
+		void upload( BeBoard* pBoard,std::vector< uint32_t > conf_upload, int nmpa);
+		void HeaderInit( BeBoard* pBoard );
+		void HeaderInitMPA( BeBoard* pBoard, const int nmpa );
+
+		void ReadTrig( BeBoard* pBoard, const int buffer_num );
+		int WaitSequencer( BeBoard* pBoard );
+
+
+		std::vector< uint32_t > readconfig(BeBoard* pBoard, const std::string& pFilename, int nmpa, int conf);
+		std::vector< uint32_t > modifyperif(BeBoard* pBoard, std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload);
+		std::vector< uint32_t > modifypix(BeBoard* pBoard, std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload, uint32_t  pixnum );
+
+
 		
 	};
 }

@@ -14,7 +14,7 @@
 #include <uhal/uhal.hpp>
 #include "MPAGlibFWInterface.h"
 #include "GlibFpgaConfig.h"
-
+//
 namespace Ph2_HwInterface
 {
 
@@ -73,6 +73,8 @@ namespace Ph2_HwInterface
 
 	void MPAGlibFWInterface::Pause()
 	{
+		WriteReg( "Control.testbeam_mode", 0 );
+		WriteReg( "Control.beam_on", 0 );
 
 	}
 
@@ -327,7 +329,7 @@ namespace Ph2_HwInterface
 
 	void MPAGlibFWInterface::HeaderInit()
 	  {
-	    std::cout<<"\nWriting MPA1-6\n";
+	 //   std::cout<<"\nWriting MPA1-6\n";
 	    for (int i=1;i<=6; i++) {
 	      HeaderInitMPA(i);
 	    }
@@ -524,19 +526,19 @@ namespace Ph2_HwInterface
 					{
 
 		
-					std::cout<<intmemory[x]<<std::endl;
+					//std::cout<<intmemory[x]<<std::endl;
 
-					std::cout<<"header"<<std::endl;
-					std::cout<<intmemory[x].substr(0, 8)<<std::endl;
+					//std::cout<<"header"<<std::endl;
+					//std::cout<<intmemory[x].substr(0, 8)<<std::endl;
 
 					header = intmemory[x].substr(0, 8);
 					if (header == "00000000") break;
 
-					std::cout<<"BX"<<std::endl;
-					std::cout<<intmemory[x].substr(8, 16)<<std::endl;
+					//std::cout<<"BX"<<std::endl;
+					//std::cout<<intmemory[x].substr(8, 16)<<std::endl;
 
-					std::cout<<"PIX"<<std::endl;
-					std::cout<<intmemory[x].substr(24, 48)<<std::endl;
+					//std::cout<<"PIX"<<std::endl;
+					//std::cout<<intmemory[x].substr(24, 48)<<std::endl;
 
 		    			std::bitset<16> b(intmemory[x].substr(8, 15));
 					BX[x] = b.to_ulong();
@@ -547,7 +549,7 @@ namespace Ph2_HwInterface
 		    			std::bitset<48> p(intmemory[x].substr(24, 47));
 					hit = {p.to_ulong()};
 					uint64_t temp = p.to_ulong();
-					std::cout<<temp<<std::endl<<std::endl;
+					//std::cout<<temp<<std::endl<<std::endl;
 
 	    				data[x]=hit;
 					}
@@ -582,7 +584,7 @@ namespace Ph2_HwInterface
 
 	void MPAGlibFWInterface::SequencerInit(int smode,int sdur,int mem,int ibuff)
 	  {
-	    std::cout<<"\nSequencerInit\n";
+	//    std::cout<<"\nSequencerInit\n";
 	    WriteReg("Shutter.time", sdur);
 	    WriteReg("Control.testbeam_mode", 0x0);
 	    WriteReg("Control.readout", mem);
@@ -590,9 +592,9 @@ namespace Ph2_HwInterface
 	    WriteReg("Control.Sequencer.buffers_index", ibuff);
 	  }
 
-
-	void MPAGlibFWInterface::upload(const std::string& pFilename, int nmpa, int conf)
+	std::vector< uint32_t > MPAGlibFWInterface::readconfig(const std::string& pFilename, int nmpa, int conf)
 	  {
+
 	   	        pugi::xml_document doc;
 			std::string fullname = "settings/Conf_"+pFilename+"_MPA"+std::to_string(nmpa)+"_config"+std::to_string(conf)+".xml";
 	    		pugi::xml_parse_result result = doc.load_file( fullname.c_str() );
@@ -600,9 +602,7 @@ namespace Ph2_HwInterface
 	    		{
 				std::cout << "ERROR :\n Unable to open the file : " << pFilename << std::endl;
 				std::cout << "Error description : " << result.description() << std::endl;
-				return;
 	    		}
-
 
 			std::vector< uint32_t > conf_upload(25);
 			int perif = -1;
@@ -619,7 +619,7 @@ namespace Ph2_HwInterface
 			conf_upload[0] = perif;
 	    		for ( pugi::xml_node cBeBoardNode = doc.child( "CONF" ).first_child(); cBeBoardNode; cBeBoardNode = cBeBoardNode.next_sibling() )
 				{
-				int pix = -1;
+				int pix = 0;
 				if (static_cast<std::string>(cBeBoardNode.name())=="pixel")
 					{
 					int pixnum = convertAnyInt(cBeBoardNode.attribute("n").value());
@@ -628,25 +628,26 @@ namespace Ph2_HwInterface
 						{
 							for ( pugi::xml_node cBeBoardNode1 = cBeBoardNode.first_child(); cBeBoardNode1; cBeBoardNode1 = cBeBoardNode1.next_sibling() )
 							{
-								if (static_cast<std::string>(cBeBoardNode1.name())=="PMR") pix = convertAnyInt(cBeBoardNode1.child_value());
+								if (static_cast<std::string>(cBeBoardNode1.name())=="PMR") pix |= convertAnyInt(cBeBoardNode1.child_value());		
+								if (static_cast<std::string>(cBeBoardNode1.name())=="ARR") pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 1)	<< 1 );
+								if (static_cast<std::string>(cBeBoardNode1.name())=="TRIMDACL")  pix |= ((convertAnyInt(cBeBoardNode1.child_value())& 31)	<< 2 );
+								if (static_cast<std::string>(cBeBoardNode1.name())=="CER")  pix |= ((convertAnyInt(cBeBoardNode1.child_value())& 1)	<< 7 );
+								if (static_cast<std::string>(cBeBoardNode1.name())=="SP")  pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 1)	<< 8 );
+								if (static_cast<std::string>(cBeBoardNode1.name())=="SR")  pix |= ((convertAnyInt(cBeBoardNode1.child_value())& 1)	<< 9 ) ;
+								if (static_cast<std::string>(cBeBoardNode1.name())=="PML")  pix |= ((convertAnyInt(cBeBoardNode1.child_value())& 1)	<< 10);
+								if (static_cast<std::string>(cBeBoardNode1.name())=="ARL")  pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 1)	<< 11) ;
+								if (static_cast<std::string>(cBeBoardNode1.name())=="TRIMDACR")  pix |= ((convertAnyInt(cBeBoardNode1.child_value())& 31)	<< 12) ;
+								if (static_cast<std::string>(cBeBoardNode1.name())=="CEL")  pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 1)	<< 17);
+								if (static_cast<std::string>(cBeBoardNode1.name())=="CW")  pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 2)	<< 18);
 			
-								if (static_cast<std::string>(cBeBoardNode1.name())=="ARR") pix |= ((convertAnyInt(cBeBoardNode.child_value()) & 1)	<< 1 );
-								if (static_cast<std::string>(cBeBoardNode1.name())=="TRIMDACL")  pix |= ((convertAnyInt(cBeBoardNode.child_value())& 31)	<< 2 );
-								if (static_cast<std::string>(cBeBoardNode1.name())=="CER")  pix |= ((convertAnyInt(cBeBoardNode.child_value())& 1)	<< 7 );
-								if (static_cast<std::string>(cBeBoardNode1.name())=="SP")  pix |= ((convertAnyInt(cBeBoardNode.child_value()) & 1)	<< 8 );
-								if (static_cast<std::string>(cBeBoardNode1.name())=="SR")  pix |= ((convertAnyInt(cBeBoardNode.child_value())& 1)	<< 9 ) ;
-								if (static_cast<std::string>(cBeBoardNode1.name())=="PML")  pix |= ((convertAnyInt(cBeBoardNode.child_value())& 1)	<< 10);
-								if (static_cast<std::string>(cBeBoardNode1.name())=="ARL")  pix |= ((convertAnyInt(cBeBoardNode.child_value()) & 1)	<< 11) ;
-								if (static_cast<std::string>(cBeBoardNode1.name())=="TRIMDACR")  pix |= ((convertAnyInt(cBeBoardNode.child_value())& 31)	<< 12) ;
-								if (static_cast<std::string>(cBeBoardNode1.name())=="CEL")  pix |= ((convertAnyInt(cBeBoardNode.child_value()) & 1)	<< 17);
-								if (static_cast<std::string>(cBeBoardNode1.name())=="CW")  pix |= ((convertAnyInt(cBeBoardNode.child_value()) & 2)	<< 18);
+
 							}
 						}
-					if (pixnum<25 and pixnum>0)
+					else if (pixnum<25 and pixnum>0)
 						{
 							for ( pugi::xml_node cBeBoardNode1 = cBeBoardNode.first_child(); cBeBoardNode1; cBeBoardNode1 = cBeBoardNode1.next_sibling() )
 							{
-								if (static_cast<std::string>(cBeBoardNode1.name())=="PML") pix = convertAnyInt(cBeBoardNode1.child_value());
+								if (static_cast<std::string>(cBeBoardNode1.name())=="PML") pix |= convertAnyInt(cBeBoardNode1.child_value());
 								if (static_cast<std::string>(cBeBoardNode1.name())=="ARL") pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 1)	<< 1 );
 								if (static_cast<std::string>(cBeBoardNode1.name())=="TRIMDACL")  pix |= ((convertAnyInt(cBeBoardNode1.child_value())& 31)	<< 2 );
 								if (static_cast<std::string>(cBeBoardNode1.name())=="CEL")  pix |= ((convertAnyInt(cBeBoardNode1.child_value())& 1)	<< 7 ) ;
@@ -657,20 +658,215 @@ namespace Ph2_HwInterface
 								if (static_cast<std::string>(cBeBoardNode1.name())=="CER")  pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 1)	<< 17) ;
 								if (static_cast<std::string>(cBeBoardNode1.name())=="SP")  pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 1)	<< 18);
 								if (static_cast<std::string>(cBeBoardNode1.name())=="SR")  pix |= ((convertAnyInt(cBeBoardNode1.child_value()) & 1)	<< 19);
+
 							}
 						}
-
-
 					conf_upload[pixnum] = pix;
 					}
 
 				}
-	    std::cout<<"Writing to Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1 " <<std::endl;
+
+
+	  return conf_upload;
+
+
+	  }
+
+	std::vector< uint32_t > MPAGlibFWInterface::modifyperif(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload)
+	  {
+	  std::vector<std::string> vars = mod.first;
+	  std::vector< uint32_t > vals = mod.second;
+	  int perif = conf_upload[0];
+
+	  for (int iperif=0;iperif<vars.size(); iperif++)
+	  {
+		if (vars[iperif]=="OM") 
+			{
+			perif = (perif&~3);
+			perif |= (vals[iperif]);
+			}
+		if (vars[iperif]=="RT") 
+			{
+			perif = (perif&~(3<<2));
+			perif |= ((vals[iperif]& 3)   << 2 );
+			}
+		if (vars[iperif]=="SCW") 
+			{
+			perif = (perif&~(15<<4));
+			perif |= ((vals[iperif]& 15)   << 4 );
+			}
+		if (vars[iperif]=="SH2") 
+			{
+			perif = (perif&~(15<<8));
+			perif |= ((vals[iperif]& 15)  << 8 );
+			}
+		if (vars[iperif]=="SH1") 
+			{
+			perif = (perif&~(15<<12));
+			perif |= ((vals[iperif]& 15)  << 12);
+			}
+		if (vars[iperif]=="CALDAC") 
+			{
+			perif = (perif&~(255<<16));
+			perif |= ((vals[iperif]& 255) << 16);
+			}
+		if (vars[iperif]=="THDAC") 
+			{
+			perif = (perif&~(255<<24));
+			perif |= ((vals[iperif]& 255) << 24);
+			}
+
+	  }
+	  conf_upload[0] = perif;
+	  return conf_upload;
+
+	  }
+	std::vector< uint32_t > MPAGlibFWInterface::modifypix(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload ,  uint32_t  pixnum )
+	  {
+
+	  	std::vector<std::string> vars = mod.first;
+	  	std::vector< uint32_t > vals = mod.second;
+		
+		uint32_t pix = conf_upload[pixnum];
+		if (pixnum<17 and pixnum>8)
+			{
+				for (int ipix=0;ipix<vars.size(); ipix++)
+				{
+					if (vars[ipix]=="PMR") 
+					{
+						pix = (pix&~1);
+						pix |= (vals[ipix]);
+					}
+					if (vars[ipix]=="ARR") 
+					{
+						pix = (pix&~(1<<1));
+						pix |= ((vals[ipix]& 1) << 1);
+					}
+					if (vars[ipix]=="TRIMDACL")  
+					{
+						pix = (pix&~(31<<2));
+						pix |= ((vals[ipix]& 31) << 2);
+					}
+					if (vars[ipix]=="CER") 
+					{ 
+						pix = (pix&~(1<<7));
+						pix |= ((vals[ipix]& 1) << 7);
+					}
+					if (vars[ipix]=="SP") 
+					{ 
+						pix = (pix&~(1<<8));
+						pix |= ((vals[ipix]& 1) << 8);
+					}
+					if (vars[ipix]=="SR")  
+					{
+						pix = (pix&~(1<<9));
+						pix |= ((vals[ipix]& 1) << 9);
+					}
+					if (vars[ipix]=="PML")  
+					{
+						pix = (pix&~(1<<10));
+						pix |= ((vals[ipix]& 1) << 10);
+					}
+					if (vars[ipix]=="ARL")  
+					{
+						pix = (pix&~(1<<11));
+						pix |= ((vals[ipix]& 1) << 11);
+					}
+					if (vars[ipix]=="TRIMDACR") 
+					{ 
+						pix = (pix&~(31<<12));
+						pix |= ((vals[ipix]& 31) << 12);
+					}
+
+					if (vars[ipix]=="CEL")  
+					{
+						pix = (pix&~(1<<17));
+						pix |= ((vals[ipix]& 1) << 17);
+					}
+					if (vars[ipix]=="CW")  
+					{
+						pix = (pix&~(2<<18));
+						pix |= ((vals[ipix]& 2) << 18);
+					}
+				}
+			}
+		else if (pixnum<25 and pixnum>0)
+			{
+				for (int ipix=0;ipix<vars.size(); ipix++)
+				{
+					if (vars[ipix]=="PML") 
+					{
+						pix = (pix&~1);
+						pix |= (vals[ipix]);
+					}
+					if (vars[ipix]=="ARL") 
+					{
+						pix = (pix&~(1<<1));
+						pix |= ((vals[ipix]& 1) << 1);
+					}
+					if (vars[ipix]=="TRIMDACL")  
+					{
+						pix = (pix&~(31<<2));
+						pix |= ((vals[ipix]& 31) << 2);
+					}
+					if (vars[ipix]=="CEL")  
+					{
+						pix = (pix&~(1<<7));
+						pix |= ((vals[ipix]& 1) << 7);
+					}
+					if (vars[ipix]=="CW")  
+					{
+						pix = (pix&~(3<<8));
+						pix |= ((vals[ipix]& 3) << 8);
+					}
+					if (vars[ipix]=="PMR")  
+					{
+						pix = (pix&~(1<<10));
+						pix |= ((vals[ipix]& 1) << 10);
+					}
+					if (vars[ipix]=="ARR")  
+					{
+						pix = (pix&~(1<<11));
+						pix |= ((vals[ipix]& 1) << 11);
+					}
+					if (vars[ipix]=="TRIMDACR")  
+					{
+						pix = (pix&~(31<<12));
+						pix |= ((vals[ipix]& 31) << 12);
+					}
+					if (vars[ipix]=="CER")  
+					{
+						pix = (pix&~(1<<17));
+						pix |= ((vals[ipix]& 1) << 17);
+					}
+					if (vars[ipix]=="SP")  
+					{
+						pix = (pix&~(1<<18));
+						pix |= ((vals[ipix]& 1) << 18);
+					}
+					if (vars[ipix]=="SR")  
+					{
+						pix = (pix&~(1<<19));
+						pix |= ((vals[ipix]& 1) << 19);
+					}
+				}
+			}
+
+
+		conf_upload[pixnum] = pix;
+	  	return conf_upload;
+
+	  }
+
+	void MPAGlibFWInterface::upload( std::vector< uint32_t > conf_upload, int nmpa)
+	  {
+
+	    //std::cout<<"Writing to Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1 " <<std::endl;
 	    WriteBlockReg( "Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1", conf_upload);
 	    WriteReg( "Configuration.mode",0x5);
-	    WriteBlockReg( "Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1", conf_upload);
-	    WriteReg( "Configuration.mode",0x5);
-	    }
+	    //WriteBlockReg( "Configuration.Memory_DataConf.MPA"+std::to_string(nmpa)+".config_1", conf_upload);
+	    //WriteReg( "Configuration.mode",0x5);
+	  }
 
 
 

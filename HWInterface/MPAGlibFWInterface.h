@@ -20,7 +20,7 @@
 #include "BeBoardFWInterface.h"
 #include "../HWDescription/Module.h"
 #include "../Utils/Visitor.h"
-
+#include "../Utils/pugixml.hpp"
 using namespace Ph2_HwDescription;
 
 /*!
@@ -112,7 +112,7 @@ public:
      * \return cNPackets: the number of packets read
      */
     uint32_t ReadData( BeBoard* pBoard, uint32_t pNthAcq, bool pBreakTrigger ) override;
-    std::pair<std::vector<uint32_t>, std::vector<uint32_t>>   ReadData( BeBoard* pBoard, int buffernum, int mpa) override;
+    std::pair<std::vector<uint32_t>, std::vector<uint32_t>>   ReadData( BeBoard* pBoard, int buffernum, int mpa);
     /*!
      * \brief Get next event from data buffer
      * \return Next event
@@ -224,11 +224,17 @@ public:
     std::pair<std::vector<uint32_t>, std::vector<std::string>> FormatData(std::pair<std::vector<uint32_t>, std::vector<uint32_t>> data);
     std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>> ReadMemory(std::vector<std::string> intmemory, int mode);
     void SequencerInit(int smode,int sdur,int mem,int ibuff);
-    void upload(const std::string& pFilename, int nmpa, int conf);
+    void upload(std::vector< uint32_t > conf_upload, int nmpa) override;;
     void HeaderInit();
     void HeaderInitMPA(int nmpa);
     void ReadTrig(int buffer_num);
     int WaitSequencer();
+    std::vector< uint32_t > readconfig(const std::string& pFilename, int nmpa, int conf);
+    std::vector< uint32_t > modifyperif(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload);
+    std::vector< uint32_t > modifypix(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload, uint32_t  pixnum );
+
+
+
 };
 }
 

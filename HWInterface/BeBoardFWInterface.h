@@ -25,8 +25,6 @@
 #include "../Utils/FileHandler.h"
 #include "../HWDescription/BeBoard.h"
 #include "../HWDescription/Definition.h"
-#include "../HWDescription/MPARegItem.h"
-#include "../HWDescription/MPA.h"
 
 #include "../HWDescription/CbcRegItem.h"
 #include "../HWDescription/Cbc.h"
@@ -151,18 +149,6 @@ public:
     * \param pBoard
     */
 
-    virtual void WriteMPABlockReg( uint8_t pFeId, std::vector<uint32_t>& pVecReq ) = 0;
-    /*!
-    * \brief Read register blocks of a MPA
-    * \param pFeId : FrontEnd to work with
-    * \param pVecReq : Vector to stack the read words
-    */
-    virtual void ReadMPABlockReg( uint8_t pFeId, std::vector<uint32_t>& pVecReq ) = 0;
-    /*!
-    * \brief Configure the board with its Config File
-    * \param pBoard
-    */
-
     virtual void ConfigureBoard( const BeBoard* pBoard ) = 0;
 
     virtual void PowerOn() = 0;
@@ -176,20 +162,14 @@ public:
     virtual std::pair<std::vector<uint32_t>, std::vector<std::string>> FormatData(std::pair<std::vector<uint32_t>, std::vector<uint32_t>> data)= 0;
     virtual std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>> ReadMemory(std::vector<std::string> intmemory, int mode) = 0;
     virtual void SequencerInit(int smode,int sdur,int mem,int ibuff) = 0;   /* j */
-    virtual void upload(const std::string& pFilename, int nmpa, int conf) = 0;
+
     virtual void HeaderInit() = 0;   /* j */
     virtual void HeaderInitMPA(const int nmpa) = 0;   /* j */
     virtual void ReadTrig(const int buffer_num) = 0;   /* j */
-    virtual void VDDPSTon() = 0;   /* j */
-    virtual void VDDPSToff() = 0;   /* j */
-    virtual void DVDDon() = 0;   /* j */
-    virtual void DVDDoff() = 0;   /* j */
-    virtual void AVDDon() = 0;   /* j */
-    virtual void PVDDon() = 0;   /* j */
-    virtual void PVDDoff() = 0;   /* j */
-    virtual void VBIASon() = 0;   /* j */
-    virtual void VBIASoff() = 0;   /* j */
-
+    virtual void upload(std::vector< uint32_t > conf_upload, int nmpa) = 0;
+    virtual std::vector< uint32_t > readconfig(const std::string& pFilename, int nmpa, int conf) = 0;
+    virtual std::vector< uint32_t > modifyperif(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload) = 0;
+    virtual std::vector< uint32_t > modifypix(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload,  uint32_t  pixnum ) = 0;
 
     virtual int WaitSequencer() = 0;   /* j */
     
@@ -256,6 +236,3 @@ protected:
 }
 
 #endif
-BeBoardFWInterface.h
-Open with
-Displaying BeBoardFWInterface.h.

@@ -182,6 +182,10 @@ void SystemController::parseHWxml( const std::string& pFilename, std::ostream& o
                     cBeBoardConnectionNode.attribute( "uri" ).value(),
                     cBeBoardConnectionNode.attribute("address_table").value(), fFileHandler );
 
+        else if ( !std::string( cBeBoardNode.attribute( "boardType" ).value() ).compare( std::string( "MPAGLIB" ) ) )
+            fBeBoardFWMap[cBeBoard->getBeBoardIdentifier()] =  new MPAGlibFWInterface( cBeBoardConnectionNode.attribute( "id" ).value(),
+                    cBeBoardConnectionNode.attribute( "uri" ).value(),
+                    cBeBoardConnectionNode.attribute("address_table").value(), fFileHandler );
         else if ( !std::string( cBeBoardNode.attribute( "boardType" ).value() ).compare( std::string( "CTA" ) ) )
             fBeBoardFWMap[cBeBoard->getBeBoardIdentifier()] =  new CtaFWInterface( cBeBoardConnectionNode.attribute( "id" ).value(),
                     cBeBoardConnectionNode.attribute( "uri" ).value(),
