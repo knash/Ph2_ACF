@@ -41,7 +41,7 @@ else
 	ExtObjectsRoot= $(RootLibraryPaths) -lPh2_Tools
 endif
 
-binaries=print systemtest datatest hybridtest cmtest calibrate commission fpgaconfig pulseshape configure
+binaries=print systemtest datatest hybridtest rtest cmtest calibrate commission fpgaconfig pulseshape configure
 binariesNoRoot=systemtest datatest fpgaconfig configure
 
 .PHONY: clean $(binaries)

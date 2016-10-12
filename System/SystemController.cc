@@ -10,7 +10,7 @@
  */
 
 #include "SystemController.h"
-
+#include <typeinfo>
 using namespace Ph2_HwDescription;
 using namespace Ph2_HwInterface;
 
@@ -84,6 +84,7 @@ void SystemController::ConfigureHw( std::ostream& os , bool bIgnoreI2c )
         bool fHoleMode, fCheck, fIgnoreI2c;
         BeBoardInterface* fBeBoardInterface;
         CbcInterface* fCbcInterface;
+        MPAInterface* fMPAInterface;
         std::ostream& los_;
     public:
         Configurator( BeBoardInterface* pBeBoardInterface, CbcInterface* pCbcInterface, bool pHoleMode, bool pCheck, bool pIgnoreI2c, std::ostream& los )
@@ -183,13 +184,16 @@ void SystemController::parseHWxml( const std::string& pFilename, std::ostream& o
                     cBeBoardConnectionNode.attribute("address_table").value(), fFileHandler );
 
         else if ( !std::string( cBeBoardNode.attribute( "boardType" ).value() ).compare( std::string( "MPAGLIB" ) ) )
+		{
             fBeBoardFWMap[cBeBoard->getBeBoardIdentifier()] =  new MPAGlibFWInterface( cBeBoardConnectionNode.attribute( "id" ).value(),
                     cBeBoardConnectionNode.attribute( "uri" ).value(),
                     cBeBoardConnectionNode.attribute("address_table").value(), fFileHandler );
+		}		
         else if ( !std::string( cBeBoardNode.attribute( "boardType" ).value() ).compare( std::string( "CTA" ) ) )
             fBeBoardFWMap[cBeBoard->getBeBoardIdentifier()] =  new CtaFWInterface( cBeBoardConnectionNode.attribute( "id" ).value(),
                     cBeBoardConnectionNode.attribute( "uri" ).value(),
                     cBeBoardConnectionNode.attribute("address_table").value(), fFileHandler );
+
         /*else
           cBeBoardFWInterface = new OtherFWInterface();*/
 
@@ -260,6 +264,7 @@ void SystemController::parseHWxml( const std::string& pFilename, std::ostream& o
 
     fBeBoardInterface = new BeBoardInterface( fBeBoardFWMap );
     fCbcInterface = new CbcInterface( fBeBoardFWMap );
+    fMPAInterface = new MPAInterface( fBeBoardFWMap );
     os << "\n";
     os << "\n";
     for ( i = 0; i < 80; i++ )

@@ -243,145 +243,28 @@ namespace Ph2_HwInterface
 		setBoard( pBoard->getBeBoardIdentifier() );
 		fBoardFW->PowerOn();
 	}
+
+	void BeBoardInterface::PowerOff( BeBoard* pBoard )
+	{
+		setBoard( pBoard->getBeBoardIdentifier() );
+		fBoardFW->PowerOff();
+	}
+
 	void BeBoardInterface::ReadVer( BeBoard* pBoard )
 	{
-	//  std::cout << "Exe ReadVer from BeBoardInterface" << std::endl;
 		setBoard( pBoard->getBeBoardIdentifier() );
 		fBoardFW->ReadVer();
 	}
-  void BeBoardInterface::TestbeamInit( BeBoard* pBoard, int clock, int phase)
-	{
-	//  std::cout << "Exe TestbeamInit from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		fBoardFW->TestbeamInit(clock, phase);
-		// overrides this anyway?
-	}
-  void BeBoardInterface::StrobeSettings( BeBoard* pBoard, 
-					 int snum, int sdel, int slen, 
-					 int sdist, int cal)
-	{
-	//  std::cout << "StrobeSettings from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		fBoardFW->StrobeSettings(snum,sdel,slen,sdist,cal);
-		// overrides this anyway?
-	}
+
   std::pair<std::vector<uint32_t>, std::vector<uint32_t>>  BeBoardInterface::ReadData( BeBoard* pBoard, 
 					 int buffernum, int mpa)
 	{
-	//  std::cout << "ReadData from BeBoardInterface" << std::endl;
+
 		setBoard( pBoard->getBeBoardIdentifier() );
 		std::pair<std::vector<uint32_t>, std::vector<uint32_t>> rval = fBoardFW->ReadData(buffernum,mpa);
 
 		return rval;	
-	// overrides this anyway?
 	}
-
-
-    std::pair<std::vector<uint32_t>, std::vector<std::string>> BeBoardInterface::FormatData(BeBoard* pBoard,std::pair<std::vector<uint32_t>, std::vector<uint32_t>> data)
-	{
-	//  std::cout << "Exe FormatData from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		std::pair<std::vector<uint32_t>,std::vector<std::string>>  rval = fBoardFW->FormatData(data);
-		return rval;
-	// overrides this anyway?
-	}
-    std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>> BeBoardInterface::ReadMemory(BeBoard* pBoard, std::vector<std::string> intmemory, int mode)
-	{
-	//  std::cout << "Exe ReadMemory from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>>  rval = fBoardFW->ReadMemory(intmemory,mode);
-		return rval;
-	// overrides this anyway?
-	}
-        void BeBoardInterface::SequencerInit( BeBoard* pBoard,int smode,int sdur,int mem,int ibuff)
-	{
-	//  std::cout << "Exe SequencerInit from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		fBoardFW->SequencerInit(smode,sdur,mem,ibuff);
-		// overrides this anyway?
-	}
-
-
-        void BeBoardInterface::upload( BeBoard* pBoard,std::vector< uint32_t > conf_upload, int nmpa)
-	{
-	//  std::cout << "Exe upload from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		fBoardFW->upload(conf_upload,nmpa);
-		// overrides this anyway?
-	}
-
-
-
-        void BeBoardInterface::HeaderInit( BeBoard* pBoard)
-	{
-	//  std::cout << "Exe HeaderInit from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		fBoardFW->HeaderInit();
-		// overrides this anyway?
-	}
-        void BeBoardInterface::HeaderInitMPA( BeBoard* pBoard, int nmpa )
-	{
-	//  std::cout << "Exe HeaderInitMPA from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		fBoardFW->HeaderInitMPA(nmpa);
-		// overrides this anyway?
-	}
-        void BeBoardInterface::ReadTrig( BeBoard* pBoard, int buffer_num )
-	{
-	 // std::cout << "Exe ReadTrig from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		fBoardFW->ReadTrig(buffer_num);
-		// overrides this anyway?
-	}
-
-
-        int BeBoardInterface::WaitSequencer( BeBoard* pBoard )
-	{
-	 // std::cout << "Exe WaitSequencer from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		int rval = fBoardFW->WaitSequencer();
-		// overrides this anyway?
-	}
-
-
-
-
-
-	std::vector< uint32_t > BeBoardInterface::readconfig(BeBoard* pBoard,const std::string& pFilename, int nmpa, int conf)
-	  {
-
-	 // std::cout << "Exe readconfig from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		std::vector< uint32_t >  rval = fBoardFW->readconfig(pFilename, nmpa, conf);
-		return rval;
-
-	  }
-
-	std::vector< uint32_t > BeBoardInterface::modifyperif(BeBoard* pBoard,std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload)
-	  {
-	//  std::cout << "Exe modifyperif from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		std::vector< uint32_t >  rval = fBoardFW->modifyperif(mod,conf_upload);
-		return rval;
-
-	  }
-	std::vector< uint32_t > BeBoardInterface::modifypix(BeBoard* pBoard,std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload, uint32_t  pixnum )
-	  {
-	 // std::cout << "Exe modifypix from BeBoardInterface" << std::endl;
-		setBoard( pBoard->getBeBoardIdentifier() );
-		std::vector< uint32_t >  rval = fBoardFW->modifypix(mod,conf_upload,pixnum);
-		return rval;
-	  }
-
-
-
-
-
-
-
-
-
-
 
 
 

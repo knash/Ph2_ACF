@@ -49,7 +49,7 @@ class FpgaConfig;
  * \class BeBoardFWInterface
  * \brief Class separating board system FW interface from uHal wrapper
  */
-class BeBoardFWInterface : public RegManager
+class BeBoardFWInterface :  public RegManager
 {
 
 public:
@@ -149,30 +149,15 @@ public:
     * \param pBoard
     */
 
-    virtual void ConfigureBoard( const BeBoard* pBoard ) = 0;
+    virtual void ConfigureBoard( const BeBoard* pBoard )=0;
 
-    virtual void PowerOn() = 0;
+    virtual void PowerOn()=0;
 
-    virtual void ReadVer() = 0;
+    virtual void PowerOff()=0;
 
-    virtual void TestbeamInit(int clock, int phase) = 0;   /* j */
-    virtual void StrobeSettings(int snum, int sdel, int slen, int sdist,
-				int cal) = 0;   /* j */
-    virtual std::pair<std::vector<uint32_t>, std::vector<uint32_t>>  ReadData(int buffernum, int mpa) = 0;   /* j */
-    virtual std::pair<std::vector<uint32_t>, std::vector<std::string>> FormatData(std::pair<std::vector<uint32_t>, std::vector<uint32_t>> data)= 0;
-    virtual std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>> ReadMemory(std::vector<std::string> intmemory, int mode) = 0;
-    virtual void SequencerInit(int smode,int sdur,int mem,int ibuff) = 0;   /* j */
+    virtual void ReadVer()=0;
 
-    virtual void HeaderInit() = 0;   /* j */
-    virtual void HeaderInitMPA(const int nmpa) = 0;   /* j */
-    virtual void ReadTrig(const int buffer_num) = 0;   /* j */
-    virtual void upload(std::vector< uint32_t > conf_upload, int nmpa) = 0;
-    virtual std::vector< uint32_t > readconfig(const std::string& pFilename, int nmpa, int conf) = 0;
-    virtual std::vector< uint32_t > modifyperif(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload) = 0;
-    virtual std::vector< uint32_t > modifypix(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload,  uint32_t  pixnum ) = 0;
-
-    virtual int WaitSequencer() = 0;   /* j */
-    
+    virtual std::pair<std::vector<uint32_t>, std::vector<uint32_t>>  ReadData(int buffernum, int mpa)=0;   
 
     /*!
      * \brief Start an acquisition in a separate thread
@@ -220,6 +205,7 @@ public:
      * \brief Get next event from data buffer
      * \return Next event
      */
+    //virtual void upload(std::vector< uint32_t > conf_upload, int nmpa) = 0;
     virtual const Event* GetNextEvent( const BeBoard* pBoard ) const = 0;
     virtual const Event* GetEvent( const BeBoard* pBoard, int i ) const = 0;
     virtual const std::vector<Event*>& GetEvents( const BeBoard* pBoard ) const = 0;

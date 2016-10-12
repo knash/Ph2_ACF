@@ -215,25 +215,12 @@ public:
 
 public:
 
-    //r/w the Mpa registers
-
-
     void ReadVer() override;
     void PowerOn() override;
-    void TestbeamInit(int clock, int phase);
-    void StrobeSettings(int snum, int sdel, int slen, int sdist, int cal);
+    void PowerOff() override;
     std::pair<std::vector<uint32_t>, std::vector<uint32_t>>  ReadData(int buffernum, int mpa);
-    std::pair<std::vector<uint32_t>, std::vector<std::string>> FormatData(std::pair<std::vector<uint32_t>, std::vector<uint32_t>> data);
-    std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>> ReadMemory(std::vector<std::string> intmemory, int mode);
-    void SequencerInit(int smode,int sdur,int mem,int ibuff);
-    void upload(std::vector< uint32_t > conf_upload, int nmpa);
-    void HeaderInit();
-    void HeaderInitMPA(int nmpa);
-    void ReadTrig(int buffer_num);
-    int WaitSequencer();
-    std::vector< uint32_t > readconfig(const std::string& pFilename, int nmpa, int conf);
-    std::vector< uint32_t > modifyperif(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload);
-    std::vector< uint32_t > modifypix(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload, uint32_t  pixnum );
+
+
 };
 }
 

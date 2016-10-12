@@ -430,119 +430,26 @@ void CtaFWInterface::checkIfUploading()
 
 
 
-	//Methods for Mpa's:
+//Methods for Mpa's:
 
 
-	void CtaFWInterface::PowerOn()
-	{
+void CtaFWInterface::PowerOn()
+{
 
-	}
+}
 
+void CtaFWInterface::PowerOff()
+{
 
-	void CtaFWInterface::ReadVer()
-	{
+}
 
-	}
 
+void CtaFWInterface::ReadVer()
+{
 
+}
 
 
 
-
-
-
-
-
-	int CtaFWInterface::WaitSequencer()
-	  {
-
-	  }
-
-
-
-
-
-
-
-	void CtaFWInterface::ReadTrig(int buffer_num)
-	  {
-
-	  }
-        void CtaFWInterface::HeaderInit()
-	  {
-
-	  }
-
-	void CtaFWInterface::HeaderInitMPA(int nmpa)
-	  {
-
-	  }
-
-	void CtaFWInterface::TestbeamInit(int clock, int phase)
-	  {
-
-	  }
-
-
-
-
-
-
-
-
-
-
-	std::pair<std::vector<uint32_t>, std::vector<std::string>> CtaFWInterface::FormatData(std::pair<std::vector<uint32_t>, std::vector<uint32_t>> data)
-	  {
-
-	  }
-
-
-
-
-
-
-	std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>> CtaFWInterface::ReadMemory(std::vector<std::string> intmemory, int mode)
-
-	{
-	
-	}
-
-
-
-
-
-
-
-
-
-	void CtaFWInterface::StrobeSettings(int snum, int sdel, int slen, 
-					       int sdist, int cal)
-	  {
-
-	  }
-
-
-	void CtaFWInterface::SequencerInit(int smode,int sdur,int mem,int ibuff)
-	  {
-
-	  }
-
-
-	void CtaFWInterface::upload(std::vector< uint32_t > conf_upload, int nmpa)
-	  {
-
-	  }
-
-	std::vector< uint32_t > CtaFWInterface::readconfig(const std::string& pFilename, int nmpa, int conf)
-	  {
-	  }
-
-	std::vector< uint32_t >  CtaFWInterface::modifyperif(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload)
-	  {
-	  }
-	std::vector< uint32_t >  CtaFWInterface::modifypix(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload, uint32_t  pixnum )
-	  {
-	  }
 
 }

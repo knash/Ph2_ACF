@@ -426,6 +426,12 @@ namespace Ph2_HwInterface
 
 	}
 
+	void GlibFWInterface::PowerOff()
+	{
+
+	}
+
+
 
 	void GlibFWInterface::ReadVer()
 	{
@@ -435,104 +441,6 @@ namespace Ph2_HwInterface
 
 
 
-
-
-
-
-
-
-	int GlibFWInterface::WaitSequencer()
-	  {
-
-	  }
-
-
-
-
-
-
-
-	void GlibFWInterface::ReadTrig(int buffer_num)
-	  {
-
-	  }
-        void GlibFWInterface::HeaderInit()
-	  {
-
-	  }
-
-	void GlibFWInterface::HeaderInitMPA(int nmpa)
-	  {
-
-	  }
-
-	void GlibFWInterface::TestbeamInit(int clock, int phase)
-	  {
-
-	  }
-
-
-
-
-
-
-
-
-
-
-	std::pair<std::vector<uint32_t>, std::vector<std::string>> GlibFWInterface::FormatData(std::pair<std::vector<uint32_t>, std::vector<uint32_t>> data)
-	  {
-
-	  }
-
-
-
-
-
-
-	std::pair<std::vector<uint32_t>, std::vector<std::vector<uint64_t>>> GlibFWInterface::ReadMemory(std::vector<std::string> intmemory, int mode)
-
-	{
-	
-	}
-
-
-
-
-
-
-
-
-
-	void GlibFWInterface::StrobeSettings(int snum, int sdel, int slen, 
-					       int sdist, int cal)
-	  {
-
-	  }
-
-
-	void GlibFWInterface::SequencerInit(int smode,int sdur,int mem,int ibuff)
-	  {
-
-	  }
-
-
-	void GlibFWInterface::upload(std::vector< uint32_t > conf_upload, int nmpa)
-	  {
-
-	  }
-
-
-	std::vector< uint32_t > GlibFWInterface::readconfig(const std::string& pFilename, int nmpa, int conf)
-	  {
-	  }
-
-	std::vector< uint32_t > GlibFWInterface::modifyperif(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload)
-	  {
-	  }
-	std::vector< uint32_t > GlibFWInterface::modifypix(std::pair < std::vector< std::string > ,std::vector< uint32_t >> mod , std::vector< uint32_t > conf_upload, uint32_t  pixnum )
-	  {
-	  }
 
 
 
